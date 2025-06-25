@@ -1,21 +1,4 @@
-// Firebase Imports
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
-  getAuth,
-  signInWithPopup,
-  GoogleAuthProvider,
-  signOut,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import {
-  getDatabase,
-  ref,
-  set,
-  update,
-  onValue
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-// ✅ Your Firebase Config
+// ✅ Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyC1LIU2JolH7XBAORbbexRqJjlQgdmXiQA",
   authDomain: "tic-tac-glow-df8d1.firebaseapp.com",
@@ -27,19 +10,18 @@ const firebaseConfig = {
   measurementId: "G-57CCH42ZY2"
 };
 
-// 🔌 Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth();
-const provider = new GoogleAuthProvider();
-const db = getDatabase();
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const database = firebase.database();
+const provider = new firebase.auth.GoogleAuthProvider();
 
+// Elements
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 const userInfo = document.getElementById("userInfo");
 const boardEl = document.getElementById("board");
 const statusEl = document.getElementById("status");
 const resetBtn = document.getElementById("resetBtn");
-
 const roomIdInput = document.getElementById("roomId");
 const createRoomBtn = document.getElementById("createRoom");
 const joinRoomBtn = document.getElementById("joinRoom");
@@ -51,7 +33,7 @@ let gameActive = false;
 let board = Array(9).fill("");
 const symbols = ["❌", "⭕"];
 
-// 🔲 Render Game Grid
+// 🔲 Render
 function renderBoard() {
   boardEl.innerHTML = "";
   board.forEach((cell, i) => {
@@ -63,50 +45,46 @@ function renderBoard() {
   });
 }
 
-// ▶️ Handle Move
+// ▶️ Move
 function makeMove(index) {
   if (!gameActive || board[index] !== "") return;
   board[index] = isPlayerX ? symbols[0] : symbols[1];
-  update(ref(db, `rooms/${currentRoom}`), {
+  firebase.database().ref(`rooms/${currentRoom}`).update({
     board,
     currentTurn: !isPlayerX
   });
 }
 
-// ✅ Win Check
 function checkWin(bd, sym) {
   const wins = [
-    [0, 1, 2], [3, 4, 5], [6, 7, 8],
-    [0, 3, 6], [1, 4, 7], [2, 5, 8],
-    [0, 4, 8], [2, 4, 6]
+    [0,1,2],[3,4,5],[6,7,8],
+    [0,3,6],[1,4,7],[2,5,8],
+    [0,4,8],[2,4,6]
   ];
   return wins.some(comb => comb.every(i => bd[i] === sym));
 }
 
 function updateStatus() {
-  statusEl.textContent = gameActive
-    ? `${isPlayerX ? symbols[0] : symbols[1]}'s turn`
-    : "Game Over";
+  statusEl.textContent = gameActive ? `${isPlayerX ? symbols[0] : symbols[1]}'s turn` : "Game Over";
 }
 
 function resetGame() {
   board = Array(9).fill("");
-  update(ref(db, `rooms/${currentRoom}`), {
+  firebase.database().ref(`rooms/${currentRoom}`).update({
     board,
     currentTurn: true
   });
 }
 
-// 🔐 Auth Logic
-loginBtn.addEventListener("click", () => {
-  signInWithPopup(auth, provider).catch(console.error);
-});
+// 🔐 Auth
+loginBtn.onclick = () => {
+  auth.signInWithPopup(provider).catch(console.error);
+};
+logoutBtn.onclick = () => {
+  auth.signOut().catch(console.error);
+};
 
-logoutBtn.addEventListener("click", () => {
-  signOut(auth).catch(console.error);
-});
-
-onAuthStateChanged(auth, user => {
+auth.onAuthStateChanged(user => {
   if (user) {
     currentUser = user;
     loginBtn.style.display = "none";
@@ -120,30 +98,30 @@ onAuthStateChanged(auth, user => {
   }
 });
 
-// 🔗 Room Setup
-createRoomBtn.addEventListener("click", () => {
+// 🧩 Room system
+createRoomBtn.onclick = () => {
   if (!currentUser) return alert("Please login first!");
   const room = Math.random().toString(36).substring(2, 7);
-  set(ref(db, `rooms/${room}`), {
+  database.ref(`rooms/${room}`).set({
     board: Array(9).fill(""),
     currentTurn: true
   }).then(() => {
     joinRoom(room);
     roomIdInput.value = room;
   });
-});
+};
 
-joinRoomBtn.addEventListener("click", () => {
+joinRoomBtn.onclick = () => {
   const room = roomIdInput.value.trim();
   if (!room) return alert("Enter a room ID!");
   joinRoom(room);
-});
+};
 
 function joinRoom(room) {
   currentRoom = room;
-  const roomRef = ref(db, `rooms/${room}`);
+  const roomRef = database.ref(`rooms/${room}`);
 
-  onValue(roomRef, snapshot => {
+  roomRef.on("value", snapshot => {
     const data = snapshot.val();
     if (!data) {
       statusEl.textContent = "Room not found.";
@@ -168,4 +146,4 @@ function joinRoom(room) {
 }
 
 // ♻️ Reset
-resetBtn.addEventListener("click", resetGame);
+resetBtn.onclick = resetGame;
