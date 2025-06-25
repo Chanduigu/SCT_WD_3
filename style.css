@@ -145,7 +145,6 @@ button:hover {
   box-shadow: 0 0 20px #ff9999;
 }
 
-/* Animations */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
