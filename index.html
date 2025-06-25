@@ -13,47 +13,36 @@
   <div class="background"></div>
 
   <div class="game-container">
-    <h1 class="title">✨ Tic Tac Glow</h1>
+    <h1 class="title">✨ Tic Tac Glow (3×3)</h1>
 
-    <div id="modeCarousel" class="carousel">
-      <div class="carousel-slide active" data-mode="cpu">
-        <h3>🤖 VS YOU</h3>
-        <p>Battle a glowing AI brain!</p>
+    <!-- Mode Selector -->
+    <div class="mode-selector" id="modeSelector">
+      <h3>Choose Game Mode</h3>
+      <div class="mode-cards">
+        <div class="mode-card" data-mode="cpu">🤖<br/>CPU</div>
+        <div class="mode-card" data-mode="local">👥<br/>Local</div>
+        <div class="mode-card" data-mode="online">🌐<br/>Online</div>
       </div>
-      <div class="carousel-slide" data-mode="local">
-        <h3>🎮 LOCAL DUEL</h3>
-        <p>Play with a friend on the same screen</p>
-      </div>
-      <div class="carousel-slide" data-mode="online">
-        <h3>🌐 ONLINE MULTIPLAYER</h3>
-        <p>Create or join a room to play remotely</p>
-      </div>
-      <div class="carousel-controls">
-        <button id="prevMode">⬅️</button>
-        <button id="nextMode">➡️</button>
-      </div>
-      <button id="selectMode">⚡ Let’s Go!</button>
+      <button id="startModeBtn">Start Game</button>
     </div>
 
+    <!-- Login Panel -->
     <div id="authPanel" style="display:none;">
       <button id="loginBtn">🔐 Login with Google</button>
       <span id="userInfo"></span>
       <button id="logoutBtn" style="display:none">🚪 Logout</button>
     </div>
 
+    <!-- Online Multiplayer -->
     <div class="multiplayer" id="multiPanel" style="display:none;">
       <input id="roomId" placeholder="Room ID" />
       <button id="createRoom">Create Room</button>
       <button id="joinRoom">Join Room</button>
-      <div id="roomLink" style="margin-top: 10px; font-size: 14px;"></div>
     </div>
 
-    <div id="startOnlineBtn" style="display:none;">
-      <button id="beginMatch">✅ Start Match</button>
-    </div>
-
-    <div class="board" id="board" style="display:none;"></div>
-    <div class="status" id="status">Choose your destiny...</div>
+    <!-- Game Board -->
+    <div class="board" id="board"></div>
+    <div class="status" id="status">Select a mode to start</div>
     <button id="resetBtn" class="reset-btn" style="display:none;">Restart Game</button>
   </div>
 
