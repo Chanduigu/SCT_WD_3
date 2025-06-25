@@ -3,48 +3,51 @@
 <head>
   <meta charset="UTF-8" />
   <title>Tic Tac Glow</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="style.css" />
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 </head>
 <body>
   <div class="background"></div>
-
   <div class="game-container">
     <h1 class="title">✨ Tic Tac Glow (3×3)</h1>
 
     <!-- Mode Selection -->
     <div class="mode-selector" id="modeSelector">
       <h3>Choose Game Mode</h3>
-      <div class="mode-card" data-mode="cpu">🧠 Player vs Computer</div>
-      <div class="mode-card" data-mode="local">🧑‍🤝‍🧑 Local Multiplayer</div>
-      <div class="mode-card" data-mode="online">🌐 Online Multiplayer</div>
+      <div class="mode-options">
+        <div class="mode-card" data-mode="cpu">🧠 vs CPU</div>
+        <div class="mode-card" data-mode="local">👫 Local</div>
+        <div class="mode-card" data-mode="online">🌐 Online</div>
+      </div>
       <button id="startModeBtn">🎮 Start Game</button>
     </div>
 
-    <!-- Auth -->
+    <!-- Login -->
     <div id="authPanel" style="display:none;">
       <button id="loginBtn">🔐 Login with Google</button>
       <span id="userInfo"></span>
-      <button id="logoutBtn" style="display:none">🚪 Logout</button>
+      <button id="logoutBtn" style="display:none;">🚪 Logout</button>
     </div>
 
-    <!-- Multiplayer Panel -->
-    <div id="multiPanel" class="multiplayer" style="display:none;">
-      <input id="roomId" placeholder="Room ID" />
+    <!-- Online Multiplayer -->
+    <div class="multiplayer" id="multiPanel" style="display:none;">
+      <input id="roomId" placeholder="Enter Room ID" />
       <button id="createRoom">Create Room</button>
       <button id="joinRoom">Join Room</button>
     </div>
 
-    <!-- Game Board -->
+    <!-- Board -->
     <div class="board" id="board"></div>
 
-    <!-- Status & Controls -->
+    <!-- Status -->
     <div class="status" id="status">Select a mode to start</div>
-    <button id="resetBtn" class="reset-btn" style="display:none;">🔄 Restart Game</button>
-    <button id="backBtn" class="reset-btn" style="display:none;">🔙 Back to Menu</button>
+
+    <!-- Restart -->
+    <button id="resetBtn" class="reset-btn" style="display:none;">🔁 Restart Game</button>
   </div>
 
   <script src="script.js"></script>
