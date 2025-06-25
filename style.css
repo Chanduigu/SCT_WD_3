@@ -1,88 +1,136 @@
-body, html {
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap');
+
+* {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
+}
+body {
   font-family: 'Orbitron', sans-serif;
-  background: #0a0a23;
-  color: white;
+  background: radial-gradient(circle at center, #0f0f1a, #000);
   height: 100vh;
   overflow: hidden;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-
 .background {
   position: absolute;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(circle at center, #1a1a2e, #0a0a23);
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, #1a1a2e 0%, #0f0f1a 100%);
+  animation: backgroundRotate 40s linear infinite;
   z-index: -1;
   opacity: 0.3;
 }
-
-.game-container {
-  text-align: center;
-  margin: auto;
-  padding: 20px;
-  max-width: 500px;
+@keyframes backgroundRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
-
-.carousel {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid #08fdd8;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 0 20px #08fdd8;
+.game-container {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 25px #08fdd8;
+  border-radius: 20px;
+  padding: 30px;
+  text-align: center;
+  width: 480px;
+  backdrop-filter: blur(10px);
+}
+.title {
+  font-size: 2rem;
+  color: #08fdd8;
+  text-shadow: 0 0 8px #08fdd8;
   margin-bottom: 20px;
 }
-
-.carousel-slide {
-  display: none;
-  animation: fadeIn 0.5s ease forwards;
+.mode-cards {
+  display: flex;
+  justify-content: space-around;
+  margin: 20px 0;
 }
-.carousel-slide.active {
-  display: block;
-}
-
-.carousel-controls {
-  margin: 10px 0;
-}
-
-button {
-  padding: 10px 20px;
-  margin: 5px;
-  border-radius: 8px;
-  border: none;
+.mode-card {
+  width: 120px;
+  padding: 20px;
+  background: rgba(255,255,255,0.05);
+  border: 2px solid transparent;
+  border-radius: 15px;
   cursor: pointer;
-  background: linear-gradient(to right, #08fdd8, #00ffe1);
-  color: black;
-  font-weight: bold;
+  font-size: 16px;
+  color: #08fdd8;
+  text-align: center;
   transition: 0.3s;
 }
-button:hover {
-  background: linear-gradient(to right, #00ffe1, #08fdd8);
-  box-shadow: 0 0 10px #08fdd8;
+.mode-card:hover, .mode-card.active {
+  border-color: #08fdd8;
+  box-shadow: 0 0 12px #08fdd8;
 }
-
+input[type="text"], input[type="radio"] {
+  padding: 10px;
+  margin: 5px;
+}
+input[type="text"] {
+  width: 160px;
+  font-size: 14px;
+  border-radius: 10px;
+  border: none;
+  background: #1c1c2e;
+  color: #fff;
+  box-shadow: 0 0 8px #08fdd8 inset;
+  outline: none;
+}
+button {
+  padding: 10px 20px;
+  font-size: 14px;
+  margin: 5px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  background: linear-gradient(to right, #08fdd8, #00ffe1);
+  color: #000;
+  font-weight: bold;
+  box-shadow: 0 0 12px #08fdd8;
+  transition: all 0.2s ease-in-out;
+}
+button:hover {
+  transform: scale(1.05);
+  background: linear-gradient(to right, #00ffe1, #08fdd8);
+  box-shadow: 0 0 20px #00ffe1;
+}
 .board {
   display: grid;
   grid-template-columns: repeat(3, 100px);
-  gap: 10px;
+  gap: 12px;
   justify-content: center;
-  margin: 20px 0;
+  margin: 25px 0;
 }
 .cell {
   width: 100px;
   height: 100px;
   font-size: 36px;
+  border-radius: 14px;
   background: #121225;
   color: #08fdd8;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
-  box-shadow: 0 0 12px #08fdd8;
+  box-shadow: 0 0 14px #08fdd8;
   cursor: pointer;
 }
-
-@keyframes fadeIn {
-  from {opacity: 0;}
-  to {opacity: 1;}
+.status {
+  font-size: 16px;
+  min-height: 24px;
+  margin-top: 10px;
+  color: #08fdd8;
+  text-shadow: 0 0 6px #08fdd8;
+}
+.reset-btn {
+  margin-top: 20px;
+  background: linear-gradient(to right, #ff4d4d, #ff9999);
+  color: #fff;
+  box-shadow: 0 0 10px #ff4d4d;
+}
+.reset-btn:hover {
+  background: linear-gradient(to right, #ff9999, #ff4d4d);
+  box-shadow: 0 0 20px #ff9999;
 }
