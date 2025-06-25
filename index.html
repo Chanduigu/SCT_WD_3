@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Tic Tac Glow</title>
   <link rel="stylesheet" href="style.css" />
+  <!-- ✅ Firebase SDKs (Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 </head>
 <body>
   <div class="background"></div>
@@ -15,21 +19,20 @@
     <div class="auth">
       <button id="loginBtn">🔐 Login with Google</button>
       <span id="userInfo"></span>
-      <button id="logoutBtn" style="display: none;">🚪 Logout</button>
+      <button id="logoutBtn" style="display:none">🚪 Logout</button>
     </div>
 
     <div class="multiplayer">
-      <input type="text" id="roomId" placeholder="Room ID" />
+      <input id="roomId" placeholder="Room ID">
       <button id="createRoom">Create Room</button>
       <button id="joinRoom">Join Room</button>
     </div>
 
     <div class="board" id="board"></div>
     <div class="status" id="status">Waiting for player...</div>
-    <button class="reset-btn" id="resetBtn">Restart Game</button>
+    <button id="resetBtn" class="reset-btn">Restart Game</button>
   </div>
 
-  <!-- Firebase Multiplayer Game -->
-  <script type="module" src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
