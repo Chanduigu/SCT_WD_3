@@ -15,13 +15,19 @@
   <div class="game-container">
     <h1 class="title">✨ Tic Tac Glow (3×3)</h1>
 
-    <!-- Mode Selector -->
+    <!-- Custom Mode Selector -->
     <div class="mode-selector" id="modeSelector">
       <h3>Choose Game Mode</h3>
       <div class="mode-cards">
-        <div class="mode-card" data-mode="cpu">🤖<br/>CPU</div>
-        <div class="mode-card" data-mode="local">👥<br/>Local</div>
-        <div class="mode-card" data-mode="online">🌐<br/>Online</div>
+        <div class="mode-card" data-mode="cpu">
+          🤖<br><span>vs CPU</span>
+        </div>
+        <div class="mode-card" data-mode="local">
+          👥<br><span>Local 2‑Player</span>
+        </div>
+        <div class="mode-card" data-mode="online">
+          🌐<br><span>Online Multiplayer</span>
+        </div>
       </div>
       <button id="startModeBtn">Start Game</button>
     </div>
@@ -33,14 +39,14 @@
       <button id="logoutBtn" style="display:none">🚪 Logout</button>
     </div>
 
-    <!-- Online Multiplayer -->
+    <!-- Multiplayer Panel -->
     <div class="multiplayer" id="multiPanel" style="display:none;">
       <input id="roomId" placeholder="Room ID" />
       <button id="createRoom">Create Room</button>
       <button id="joinRoom">Join Room</button>
     </div>
 
-    <!-- Game Board -->
+    <!-- Game Area -->
     <div class="board" id="board"></div>
     <div class="status" id="status">Select a mode to start</div>
     <button id="resetBtn" class="reset-btn" style="display:none;">Restart Game</button>
