@@ -1,4 +1,4 @@
-// ✅ Firebase Config
+// Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyC1LIU2JolH7XBAORbbexRqJjlQgdmXiQA",
   authDomain: "tic-tac-glow-df8d1.firebaseapp.com",
@@ -33,7 +33,6 @@ let gameActive = false;
 let board = Array(9).fill("");
 const symbols = ["❌", "⭕"];
 
-// 🔲 Render
 function renderBoard() {
   boardEl.innerHTML = "";
   board.forEach((cell, i) => {
@@ -45,7 +44,6 @@ function renderBoard() {
   });
 }
 
-// ▶️ Move
 function makeMove(index) {
   if (!gameActive || board[index] !== "") return;
   board[index] = isPlayerX ? symbols[0] : symbols[1];
@@ -76,13 +74,9 @@ function resetGame() {
   });
 }
 
-// 🔐 Auth
-loginBtn.onclick = () => {
-  auth.signInWithPopup(provider).catch(console.error);
-};
-logoutBtn.onclick = () => {
-  auth.signOut().catch(console.error);
-};
+// Auth
+loginBtn.onclick = () => auth.signInWithPopup(provider).catch(console.error);
+logoutBtn.onclick = () => auth.signOut().catch(console.error);
 
 auth.onAuthStateChanged(user => {
   if (user) {
@@ -98,33 +92,47 @@ auth.onAuthStateChanged(user => {
   }
 });
 
-// 🧩 Room system
+// Room System with Feedback
 createRoomBtn.onclick = () => {
-  if (!currentUser) return alert("Please login first!");
+  if (!currentUser) {
+    statusEl.textContent = "❗ Please login first!";
+    return;
+  }
+
   const room = Math.random().toString(36).substring(2, 7);
+  statusEl.textContent = `🔧 Creating room: ${room}...`;
+
   database.ref(`rooms/${room}`).set({
     board: Array(9).fill(""),
     currentTurn: true
   }).then(() => {
-    joinRoom(room);
+    statusEl.textContent = `✅ Room "${room}" created! Joining room...`;
     roomIdInput.value = room;
+    joinRoom(room);
+  }).catch((error) => {
+    statusEl.textContent = `❌ Error creating room: ${error.message}`;
+    console.error("Firebase error:", error);
   });
 };
 
 joinRoomBtn.onclick = () => {
   const room = roomIdInput.value.trim();
-  if (!room) return alert("Enter a room ID!");
+  if (!room) {
+    statusEl.textContent = "❗ Enter a room ID!";
+    return;
+  }
   joinRoom(room);
 };
 
 function joinRoom(room) {
   currentRoom = room;
   const roomRef = database.ref(`rooms/${room}`);
+  statusEl.textContent = `🔄 Joining room: ${room}...`;
 
   roomRef.on("value", snapshot => {
     const data = snapshot.val();
     if (!data) {
-      statusEl.textContent = "Room not found.";
+      statusEl.textContent = "❌ Room not found!";
       return;
     }
 
@@ -136,14 +144,13 @@ function joinRoom(room) {
 
     const winner = checkWin(board, symbols[+!isPlayerX]);
     if (winner) {
-      statusEl.textContent = `${symbols[+!isPlayerX]} wins!`;
+      statusEl.textContent = `🏆 ${symbols[+!isPlayerX]} wins!`;
       gameActive = false;
     } else if (!board.includes("")) {
-      statusEl.textContent = "Draw!";
+      statusEl.textContent = "🤝 Draw!";
       gameActive = false;
     }
   });
 }
 
-// ♻️ Reset
 resetBtn.onclick = resetGame;
