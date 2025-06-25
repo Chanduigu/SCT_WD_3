@@ -1,4 +1,3 @@
-// Firebase config for online multiplayer
 const firebaseConfig = {
   apiKey: "AIzaSyC1LIU2JolH7XBAORbbexRqJjlQgdmXiQA",
   authDomain: "tic-tac-glow-df8d1.firebaseapp.com",
@@ -32,17 +31,26 @@ let currentUser = null;
 let currentRoom = null;
 let isPlayerX = true;
 let gameActive = false;
-let board = Array(9).fill("");
 let gameMode = null;
+let board = Array(9).fill("");
+
 const symbols = [
   '<span style="color:#ff4d4d;">🪙</span>',
   '<span style="color:#00ffe1;">🧿</span>'
 ];
 
+let selectedMode = null;
+document.querySelectorAll('.mode-card').forEach(card => {
+  card.onclick = () => {
+    document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+    selectedMode = card.getAttribute('data-mode');
+  };
+});
+
 startModeBtn.onclick = () => {
-  const selected = document.querySelector('input[name="mode"]:checked');
-  if (!selected) return alert("Please choose a game mode.");
-  gameMode = selected.value;
+  if (!selectedMode) return alert("Please choose a game mode.");
+  gameMode = selectedMode;
   modeSelector.style.display = "none";
   resetBtn.style.display = "inline-block";
   if (gameMode === "online") {
@@ -61,15 +69,9 @@ logoutBtn.onclick = () => auth.signOut();
 
 auth.onAuthStateChanged(user => {
   currentUser = user;
-  if (user) {
-    loginBtn.style.display = "none";
-    logoutBtn.style.display = "inline-block";
-    userInfo.textContent = `👤 ${user.displayName}`;
-  } else {
-    loginBtn.style.display = "inline-block";
-    logoutBtn.style.display = "none";
-    userInfo.textContent = "";
-  }
+  loginBtn.style.display = user ? "none" : "inline-block";
+  logoutBtn.style.display = user ? "inline-block" : "none";
+  userInfo.textContent = user ? `👤 ${user.displayName}` : "";
 });
 
 function renderBoard() {
@@ -91,6 +93,25 @@ function updateStatus() {
 function makeMove(index) {
   if (!gameActive || board[index] !== "") return;
 
+  if (gameMode === "online" && currentRoom) {
+    const roomRef = database.ref(`rooms/${currentRoom}`);
+    roomRef.once("value").then(snapshot => {
+      const data = snapshot.val();
+      const mySymbol = data.players[currentUser.uid].symbol;
+      if (data.currentTurn !== mySymbol) return;
+
+      const newBoard = data.board;
+      newBoard[index] = symbols[mySymbol === "X" ? 0 : 1];
+      const nextTurn = (mySymbol === "X") ? "O" : "X";
+
+      roomRef.update({
+        board: newBoard,
+        currentTurn: nextTurn
+      });
+    });
+    return;
+  }
+
   board[index] = symbols[isPlayerX ? 0 : 1];
   renderBoard();
   const winner = checkWin();
@@ -99,37 +120,29 @@ function makeMove(index) {
     gameActive = false;
     return;
   }
-
   if (!board.includes("")) {
     statusEl.textContent = "🤝 Draw!";
     gameActive = false;
     return;
   }
-
   isPlayerX = !isPlayerX;
   updateStatus();
 
-  if (gameMode === "cpu" && !isPlayerX) {
-    setTimeout(cpuMove, 500);
-  }
+  if (gameMode === "cpu" && !isPlayerX) setTimeout(cpuMove, 500);
 }
 
 function cpuMove() {
   const empty = board.map((val, i) => val === "" ? i : null).filter(v => v !== null);
-  const move = empty[Math.floor(Math.random() * empty.length)];
-  makeMove(move);
+  makeMove(empty[Math.floor(Math.random() * empty.length)]);
 }
 
 function checkWin() {
-  const combos = [
+  const win = [
     [0,1,2],[3,4,5],[6,7,8],
     [0,3,6],[1,4,7],[2,5,8],
     [0,4,8],[2,4,6]
   ];
-  return combos.some(combo => {
-    const [a,b,c] = combo;
-    return board[a] !== "" && board[a] === board[b] && board[a] === board[c];
-  });
+  return win.some(([a,b,c]) => board[a] && board[a] === board[b] && board[a] === board[c]);
 }
 
 resetBtn.onclick = () => {
@@ -140,15 +153,19 @@ resetBtn.onclick = () => {
   updateStatus();
 };
 
-// Online Room Join/Create
 createRoomBtn.onclick = () => {
   if (!currentUser) return alert("Please login first!");
   const room = Math.random().toString(36).substring(2, 7);
   roomIdInput.value = room;
+  const players = {};
+  players[currentUser.uid] = { name: currentUser.displayName, symbol: "X" };
   database.ref(`rooms/${room}`).set({
     board: Array(9).fill(""),
-    currentTurn: true
+    players,
+    currentTurn: "X",
+    started: false
   }).then(() => {
+    navigator.clipboard.writeText(location.href.split("?")[0] + "?room=" + room);
     joinRoom(room);
   });
 };
@@ -162,16 +179,10 @@ joinRoomBtn.onclick = () => {
 function joinRoom(room) {
   currentRoom = room;
   const roomRef = database.ref(`rooms/${room}`);
-  roomRef.on("value", snapshot => {
+  roomRef.once("value").then(snapshot => {
     const data = snapshot.val();
-    if (!data) {
-      statusEl.textContent = "❌ Room not found!";
-      return;
-    }
-    board = data.board;
-    isPlayerX = data.currentTurn;
-    gameActive = true;
-    renderBoard();
-    updateStatus();
-  });
-}
+    if (!data) return statusEl.textContent = "❌ Room not found!";
+    const players = data.players || {};
+    if (!players[currentUser.uid]) {
+      if (Object.keys(players).length >= 2) return alert("Room is full!");
+      players[currentUser.uid] = { name: current
