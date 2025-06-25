@@ -1,3 +1,4 @@
+// --- Firebase Setup ---
 const firebaseConfig = {
   apiKey: "AIzaSyC1LIU2JolH7XBAORbbexRqJjlQgdmXiQA",
   authDomain: "tic-tac-glow-df8d1.firebaseapp.com",
@@ -13,32 +14,34 @@ const auth = firebase.auth();
 const database = firebase.database();
 const provider = new firebase.auth.GoogleAuthProvider();
 
-const loginBtn = document.getElementById("loginBtn");
-const logoutBtn = document.getElementById("logoutBtn");
-const userInfo = document.getElementById("userInfo");
-const boardEl = document.getElementById("board");
-const statusEl = document.getElementById("status");
-const resetBtn = document.getElementById("resetBtn");
-const roomIdInput = document.getElementById("roomId");
-const createRoomBtn = document.getElementById("createRoom");
-const joinRoomBtn = document.getElementById("joinRoom");
-const authPanel = document.getElementById("authPanel");
-const multiPanel = document.getElementById("multiPanel");
-const modeSelector = document.getElementById("modeSelector");
-const startModeBtn = document.getElementById("startModeBtn");
+// --- DOM Elements ---
+const loginBtn = document.getElementById("loginBtn"),
+      logoutBtn = document.getElementById("logoutBtn"),
+      userInfo = document.getElementById("userInfo"),
+      boardEl = document.getElementById("board"),
+      statusEl = document.getElementById("status"),
+      resetBtn = document.getElementById("resetBtn"),
+      roomIdInput = document.getElementById("roomId"),
+      createRoomBtn = document.getElementById("createRoom"),
+      joinRoomBtn = document.getElementById("joinRoom"),
+      authPanel = document.getElementById("authPanel"),
+      multiPanel = document.getElementById("multiPanel"),
+      modeSelector = document.getElementById("modeSelector"),
+      startModeBtn = document.getElementById("startModeBtn");
 
-let currentUser = null;
-let currentRoom = null;
-let isPlayerX = true;
-let gameActive = false;
-let gameMode = null;
-let board = Array(9).fill("");
+let currentUser = null,
+    currentRoom = null,
+    isPlayerX = true,
+    gameActive = false,
+    gameMode = null,
+    board = Array(9).fill("");
 
 const symbols = [
   '<span style="color:#ff4d4d;">🪙</span>',
   '<span style="color:#00ffe1;">🧿</span>'
 ];
 
+// --- Auth State ---
 auth.onAuthStateChanged(user => {
   currentUser = user;
   loginBtn.style.display = user ? "none" : "inline-block";
@@ -49,11 +52,12 @@ auth.onAuthStateChanged(user => {
 loginBtn.onclick = () => auth.signInWithPopup(provider);
 logoutBtn.onclick = () => auth.signOut();
 
+// --- Render & Status ---
 function renderBoard() {
   boardEl.innerHTML = "";
   board.forEach((cell, i) => {
     const div = document.createElement("div");
-    div.classList.add("cell");
+    div.className = "cell";
     div.innerHTML = cell;
     div.onclick = () => makeMove(i);
     boardEl.appendChild(div);
@@ -65,6 +69,7 @@ function updateStatus() {
   statusEl.textContent = `${isPlayerX ? "🪙" : "🧿"}'s Turn`;
 }
 
+// --- Game Logic ---
 function makeMove(index) {
   if (!gameActive || board[index] !== "") return;
 
@@ -77,7 +82,7 @@ function makeMove(index) {
 
       const newBoard = data.board;
       newBoard[index] = symbols[mySymbol === "X" ? 0 : 1];
-      const nextTurn = (mySymbol === "X") ? "O" : "X";
+      const nextTurn = mySymbol === "X" ? "O" : "X";
 
       roomRef.update({
         board: newBoard,
@@ -94,18 +99,14 @@ function makeMove(index) {
   if (winner) {
     statusEl.textContent = `🏆 ${symbols[+!isPlayerX]} wins!`;
     gameActive = false;
-    setTimeout(() => {
-      alert(`🏆 Player ${isPlayerX ? "🪙" : "🧿"} wins!`);
-    }, 300);
+    setTimeout(() => alert(`🏆 Player ${isPlayerX ? "🪙" : "🧿"} wins!`), 300);
     return;
   }
 
   if (!board.includes("")) {
     statusEl.textContent = "🤝 Draw!";
     gameActive = false;
-    setTimeout(() => {
-      alert("🤝 It's a Draw!");
-    }, 300);
+    setTimeout(() => alert("🤝 It's a Draw!"), 300);
     return;
   }
 
@@ -116,19 +117,21 @@ function makeMove(index) {
 }
 
 function cpuMove() {
-  const empty = board.map((val, i) => val === "" ? i : null).filter(v => v !== null);
-  makeMove(empty[Math.floor(Math.random() * empty.length)]);
+  const empty = board.map((v, i) => v === "" ? i : null).filter(v => v !== null);
+  const move = empty[Math.floor(Math.random() * empty.length)];
+  makeMove(move);
 }
 
 function checkWin() {
-  const win = [
+  const winPatterns = [
     [0,1,2],[3,4,5],[6,7,8],
     [0,3,6],[1,4,7],[2,5,8],
     [0,4,8],[2,4,6]
   ];
-  return win.some(([a,b,c]) => board[a] && board[a] === board[b] && board[a] === board[c]);
+  return winPatterns.some(([a,b,c]) => board[a] && board[a] === board[b] && board[a] === board[c]);
 }
 
+// --- Reset ---
 resetBtn.onclick = () => {
   board = Array(9).fill("");
   isPlayerX = true;
@@ -137,19 +140,21 @@ resetBtn.onclick = () => {
   updateStatus();
 };
 
+// --- Room Creation & Joining ---
 createRoomBtn.onclick = () => {
-  if (!currentUser) return alert("Please login first!");
+  if (!currentUser) return alert("🔐 Please login first!");
   const room = Math.random().toString(36).substring(2, 7);
   roomIdInput.value = room;
-  const players = {};
-  players[currentUser.uid] = { name: currentUser.displayName, symbol: "X" };
+  const players = {
+    [currentUser.uid]: { name: currentUser.displayName, symbol: "X" }
+  };
   database.ref(`rooms/${room}`).set({
     board: Array(9).fill(""),
     players,
     currentTurn: "X",
     started: false
   }).then(() => {
-    navigator.clipboard.writeText(location.href.split("?")[0] + "?room=" + room);
+    navigator.clipboard.writeText(`${location.origin}${location.pathname}?room=${room}`);
     joinRoom(room);
   });
 };
@@ -169,28 +174,31 @@ function joinRoom(room) {
     const players = data.players || {};
     if (!players[currentUser.uid]) {
       if (Object.keys(players).length >= 2) return alert("Room is full!");
-      players[currentUser.uid] = { name: currentUser.displayName, symbol: "O" };
+      players[currentUser.uid] = {
+        name: currentUser.displayName,
+        symbol: "O"
+      };
       database.ref(`rooms/${room}/players`).set(players);
       database.ref(`rooms/${room}/started`).set(true);
     }
+
     roomRef.on("value", snap => {
       const state = snap.val();
       if (!state.started) return statusEl.textContent = "Waiting for opponent...";
       board = state.board;
-      const me = state.players[currentUser.uid];
-      isPlayerX = (me.symbol === "X");
+      isPlayerX = state.players[currentUser.uid].symbol === "X";
       gameActive = true;
       renderBoard();
-      statusEl.textContent = `${state.currentTurn === me.symbol ? "Your" : "Opponent's"} Turn (${state.currentTurn})`;
+      statusEl.textContent = `${state.currentTurn === state.players[currentUser.uid].symbol ? "Your" : "Opponent's"} Turn (${state.currentTurn})`;
     });
   });
 }
 
+// --- Mode Selection & Auto Room Join ---
 window.onload = () => {
-  const params = new URLSearchParams(window.location.search);
+  const params = new URLSearchParams(location.search);
   if (params.has("room")) {
-    const room = params.get("room");
-    roomIdInput.value = room;
+    roomIdInput.value = params.get("room");
     gameMode = "online";
     modeSelector.style.display = "none";
     authPanel.style.display = "block";
@@ -198,18 +206,18 @@ window.onload = () => {
     statusEl.textContent = "Login to join shared room.";
   }
 
-  let selectedMode = null;
-  document.querySelectorAll('.mode-card').forEach(card => {
+  // Mode selection
+  document.querySelectorAll(".mode-card").forEach(card => {
     card.onclick = () => {
-      document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
-      card.classList.add('active');
-      selectedMode = card.getAttribute('data-mode');
+      document.querySelectorAll(".mode-card").forEach(c => c.classList.remove("active"));
+      card.classList.add("active");
+      gameMode = card.dataset.mode;
     };
   });
 
+  // Start Game
   startModeBtn.onclick = () => {
-    if (!selectedMode) return alert("Please choose a game mode.");
-    gameMode = selectedMode;
+    if (!gameMode) return alert("▶️ Choose a mode!");
     modeSelector.style.display = "none";
     resetBtn.style.display = "inline-block";
 
