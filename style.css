@@ -1,20 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap');
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 body {
   font-family: 'Orbitron', sans-serif;
   background: radial-gradient(circle at center, #0f0f1a, #000);
   height: 100vh;
-  overflow: hidden;
-  color: #ffffff;
+  margin: 0;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  color: white;
 }
 
 .background {
@@ -33,7 +27,7 @@ body {
 }
 
 .game-container {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 0 25px #08fdd8;
   border-radius: 20px;
@@ -47,60 +41,41 @@ body {
   font-size: 2rem;
   color: #08fdd8;
   text-shadow: 0 0 8px #08fdd8;
-  margin-bottom: 20px;
+}
+
+.mode-options {
+  display: flex;
+  justify-content: space-around;
+  margin: 15px 0;
 }
 
 .mode-card {
-  padding: 12px;
-  margin: 10px 0;
-  background: #1f1f40;
-  border: 2px solid #08fdd8;
+  padding: 10px 15px;
+  background: #1f1f3f;
   border-radius: 10px;
   cursor: pointer;
-  transition: transform 0.2s ease, background 0.2s ease;
-}
-
-.mode-card:hover {
-  transform: scale(1.05);
-  background: #2a2a50;
+  box-shadow: 0 0 8px #08fdd8;
 }
 
 .mode-card.active {
   background: #08fdd8;
-  color: black;
-  font-weight: bold;
-}
-
-input[type="text"] {
-  width: 160px;
-  font-size: 14px;
-  border-radius: 10px;
-  border: none;
-  background: #1c1c2e;
-  color: #fff;
-  box-shadow: 0 0 8px #08fdd8 inset;
-  outline: none;
-  padding: 10px;
-  margin: 5px;
+  color: #000;
+  box-shadow: 0 0 20px #00ffe1;
 }
 
 button {
+  margin-top: 10px;
   padding: 10px 20px;
-  font-size: 14px;
-  margin: 5px;
+  background: linear-gradient(to right, #08fdd8, #00ffe1);
   border: none;
   border-radius: 10px;
-  cursor: pointer;
-  background: linear-gradient(to right, #08fdd8, #00ffe1);
-  color: #000;
   font-weight: bold;
-  box-shadow: 0 0 12px #08fdd8;
+  cursor: pointer;
+  transition: 0.3s;
 }
 
 button:hover {
   transform: scale(1.05);
-  background: linear-gradient(to right, #00ffe1, #08fdd8);
-  box-shadow: 0 0 20px #00ffe1;
 }
 
 .board {
@@ -123,6 +98,7 @@ button:hover {
   justify-content: center;
   box-shadow: 0 0 14px #08fdd8;
   cursor: pointer;
+  transition: transform 0.2s ease;
 }
 
 .status {
@@ -134,5 +110,7 @@ button:hover {
 }
 
 .reset-btn {
-  margin-top: 10px;
+  background: linear-gradient(to right, #ff4d4d, #ff9999);
+  color: #fff;
+  box-shadow: 0 0 10px #ff4d4d;
 }
