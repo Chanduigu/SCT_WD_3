@@ -53,7 +53,7 @@ auth.onAuthStateChanged(user => {
   logoutBtn.style.display = user ? "inline-block" : "none";
   userInfo.textContent = user ? `👤 ${user.displayName}` : "";
   if (user && gameMode === "online") {
-    statusEl.textContent = "Enter room ID or create one.";
+    statusEl.innerHTML = "Enter room ID or create one.";
   }
 });
 
@@ -77,7 +77,7 @@ startModeBtn.onclick = () => {
   if (gameMode === "online") {
     authPanel.style.display = "block";
     multiPanel.style.display = "block";
-    statusEl.textContent = "Login to start.";
+    statusEl.innerHTML = "Login to start.";
   } else {
     authPanel.style.display = "none";
     multiPanel.style.display = "none";
@@ -97,9 +97,9 @@ function startLocalGame() {
 function updateStatus() {
   if (!gameActive) return;
   if (gameMode === "online") {
-    statusEl.textContent = (currentTurn === playerSymbol) ? `Your Turn (${playerSymbol})` : `Opponent's Turn`;
+    statusEl.innerHTML = (currentTurn === playerSymbol) ? `Your Turn (${playerSymbol})` : `Opponent's Turn`;
   } else {
-    statusEl.textContent = `${isPlayerX ? "🪙" : "🧿"}'s Turn`;
+    statusEl.innerHTML = `${isPlayerX ? "🪙" : "🧿"}'s Turn`;
   }
 }
 
@@ -129,13 +129,13 @@ function handleCellClick(i) {
     board[i] = symbols[isPlayerX ? 0 : 1];
     renderBoard();
     if (checkWin()) {
-      statusEl.textContent = `🏆 ${symbols[+!isPlayerX]} wins!`;
+      statusEl.innerHTML = `🏆 ${symbols[+!isPlayerX]} wins!`;
       alert(`🏆 Player ${isPlayerX ? "🪙" : "🧿"} wins!`);
       gameActive = false;
       return;
     }
     if (!board.includes("")) {
-      statusEl.textContent = "🤝 Draw!";
+      statusEl.innerHTML = "🤝 Draw!";
       alert("🤝 It's a Draw!");
       gameActive = false;
       return;
@@ -181,7 +181,7 @@ menuBtn.onclick = () => {
   resetBtn.style.display = "none";
   menuBtn.style.display = "none";
   modeSelector.style.display = "block";
-  statusEl.textContent = "Select a mode to start";
+  statusEl.innerHTML = "Select a mode to start";
   if (currentRoom) database.ref(`rooms/${currentRoom}`).off();
   currentRoom = null;
 };
@@ -248,14 +248,14 @@ function setupRoomListener(room) {
     const players = d.players || {};
     const player = players[currentUser.uid];
     if (!player) {
-      statusEl.textContent = "You are not a player in this room.";
+      statusEl.innerHTML = "You are not a player in this room.";
       return;
     }
 
     playerSymbol = player.symbol;
 
     if (Object.keys(players).length < 2) {
-      statusEl.textContent = "Waiting for second player...";
+      statusEl.innerHTML = "Waiting for second player...";
       gameActive = false;
       return;
     }
@@ -263,14 +263,14 @@ function setupRoomListener(room) {
     const winner = checkWinOnline(board);
     if (winner && gameActive) {
       const winSymbol = symbols[winner === "X" ? 0 : 1];
-      statusEl.textContent = `🏆 ${winSymbol} wins!`;
+      statusEl.innerHTML = `🏆 ${winSymbol} wins!`;
       alert(`🏆 Player ${winner === "X" ? "🪙" : "🧿"} wins!`);
       gameActive = false;
       return;
     }
 
     if (!board.includes("") && gameActive) {
-      statusEl.textContent = "🤝 Draw!";
+      statusEl.innerHTML = "🤝 Draw!";
       alert("🤝 It's a Draw!");
       gameActive = false;
       return;
@@ -283,7 +283,7 @@ function setupRoomListener(room) {
   });
 }
 
-// Auto-join
+// Auto-join via URL
 window.onload = () => {
   const params = new URLSearchParams(window.location.search);
   if (params.has("room")) {
@@ -292,11 +292,11 @@ window.onload = () => {
     modeSelector.style.display = "none";
     authPanel.style.display = "block";
     multiPanel.style.display = "block";
-    statusEl.textContent = "Login to join shared room.";
+    statusEl.innerHTML = "Login to join shared room.";
   }
 };
 
-// Local Win
+// Win Logic
 function checkWin() {
   const winCombos = [
     [0,1,2],[3,4,5],[6,7,8],
@@ -308,7 +308,6 @@ function checkWin() {
   );
 }
 
-// Online Win Check
 function checkWinOnline(boardState) {
   const winPatterns = [
     [0,1,2],[3,4,5],[6,7,8],
