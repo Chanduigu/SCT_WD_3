@@ -1,14 +1,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap');
 
+* {
+  box-sizing: border-box;
+}
+
 body {
   font-family: 'Orbitron', sans-serif;
   background: radial-gradient(circle at center, #0f0f1a, #000);
-  height: 100vh;
   margin: 0;
+  padding: 0;
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
   color: white;
+  overflow: hidden;
 }
 
 .background {
@@ -41,12 +47,14 @@ body {
   font-size: 2rem;
   color: #08fdd8;
   text-shadow: 0 0 8px #08fdd8;
+  margin-bottom: 20px;
 }
 
 .mode-options {
   display: flex;
   justify-content: space-around;
   margin: 15px 0;
+  gap: 10px;
 }
 
 .mode-card {
@@ -55,6 +63,9 @@ body {
   border-radius: 10px;
   cursor: pointer;
   box-shadow: 0 0 8px #08fdd8;
+  transition: 0.2s;
+  flex: 1;
+  text-align: center;
 }
 
 .mode-card.active {
@@ -71,11 +82,13 @@ button {
   border-radius: 10px;
   font-weight: bold;
   cursor: pointer;
-  transition: 0.3s;
+  transition: transform 0.3s, box-shadow 0.3s;
+  color: #000;
 }
 
 button:hover {
   transform: scale(1.05);
+  box-shadow: 0 0 10px #08fdd8;
 }
 
 .board {
@@ -101,6 +114,10 @@ button:hover {
   transition: transform 0.2s ease;
 }
 
+.cell:hover {
+  transform: scale(1.1);
+}
+
 .status {
   font-size: 16px;
   min-height: 24px;
@@ -113,4 +130,47 @@ button:hover {
   background: linear-gradient(to right, #ff4d4d, #ff9999);
   color: #fff;
   box-shadow: 0 0 10px #ff4d4d;
+}
+
+input#roomId {
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 8px;
+  border: 1px solid #08fdd8;
+  background: #1a1a2e;
+  color: #08fdd8;
+  width: 80%;
+  outline: none;
+}
+
+input#roomId::placeholder {
+  color: #7fffe6;
+  opacity: 0.6;
+}
+
+#userInfo {
+  display: inline-block;
+  margin-left: 10px;
+  font-size: 14px;
+  color: #08fdd8;
+  text-shadow: 0 0 4px #08fdd8;
+}
+
+/* Responsive */
+@media (max-width: 500px) {
+  .game-container {
+    width: 95%;
+    padding: 20px;
+  }
+
+  .board {
+    grid-template-columns: repeat(3, 80px);
+    gap: 10px;
+  }
+
+  .cell {
+    width: 80px;
+    height: 80px;
+    font-size: 28px;
+  }
 }
