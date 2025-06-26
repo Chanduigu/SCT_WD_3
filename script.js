@@ -186,18 +186,26 @@ menuBtn.onclick = () => {
   currentRoom = null;
 };
 
-// Firebase Multiplayer
+// === Firebase Online Multiplayer ===
+
 createRoomBtn.onclick = () => {
   if (!currentUser) return alert("Login first!");
   const room = Math.random().toString(36).substring(2, 7);
-  roomIdInput.value = room;
-  database.ref(`rooms/${room}`).set({
+  currentRoom = room;
+  setupRoomListener(room); // Attach listener FIRST
+  const ref = database.ref(`rooms/${room}`);
+  ref.set({
     board: Array(9).fill(""),
-    players: { [currentUser.uid]: { symbol: "X", name: currentUser.displayName } },
+    players: {
+      [currentUser.uid]: {
+        symbol: "X",
+        name: currentUser.displayName
+      }
+    },
     currentTurn: "X"
   }).then(() => {
-    navigator.clipboard.writeText(location.href.split("?")[0] + "?room=" + room);
-    joinRoom(room);
+    roomIdInput.value = room;
+    navigator.clipboard.writeText(window.location.href.split("?")[0] + "?room=" + room);
   });
 };
 
@@ -205,42 +213,57 @@ joinRoomBtn.onclick = () => {
   const room = roomIdInput.value.trim();
   if (!room) return alert("Enter a room ID");
   if (!currentUser) return alert("Login first!");
-  joinRoom(room);
-};
 
-function joinRoom(room) {
   currentRoom = room;
-  const ref = database.ref(`rooms/${room}`);
+  setupRoomListener(room);
 
+  const ref = database.ref(`rooms/${room}`);
   ref.once("value").then(snapshot => {
     const data = snapshot.val();
     if (!data) return alert("Room not found!");
-    if (!data.players[currentUser.uid]) {
-      const numPlayers = Object.keys(data.players).length;
-      if (numPlayers >= 2) return alert("Room full!");
-      const symbol = "O";
-      data.players[currentUser.uid] = { symbol, name: currentUser.displayName };
-      ref.child("players").set(data.players);
+
+    const players = data.players || {};
+    if (!players[currentUser.uid]) {
+      if (Object.keys(players).length >= 2) return alert("Room full!");
+      players[currentUser.uid] = {
+        symbol: "O",
+        name: currentUser.displayName
+      };
+      ref.child("players").set(players);
+    }
+  });
+};
+
+function setupRoomListener(room) {
+  const ref = database.ref(`rooms/${room}`);
+
+  ref.on("value", snap => {
+    const d = snap.val();
+    if (!d) return;
+
+    board = d.board || Array(9).fill("");
+    currentTurn = d.currentTurn || "X";
+    renderBoard();
+
+    const players = d.players || {};
+    const player = players[currentUser.uid];
+    if (!player) {
+      statusEl.textContent = "You are not a player in this room.";
+      return;
     }
 
+    playerSymbol = player.symbol;
+
+    if (Object.keys(players).length < 2) {
+      statusEl.textContent = "Waiting for second player...";
+      gameActive = false;
+      return;
+    }
+
+    gameActive = true;
+    updateStatus();
     resetBtn.style.display = "inline-block";
     menuBtn.style.display = "inline-block";
-
-    ref.on("value", snap => {
-      const d = snap.val();
-      if (!d) return;
-      board = d.board;
-      currentTurn = d.currentTurn;
-      renderBoard();
-
-      const playerData = d.players[currentUser.uid];
-      if (!playerData) return;
-      playerSymbol = playerData.symbol;
-
-      const playersReady = Object.keys(d.players).length >= 2;
-      gameActive = playersReady;
-      statusEl.textContent = playersReady ? (currentTurn === playerSymbol ? `Your Turn (${playerSymbol})` : "Opponent's Turn") : "Waiting for second player...";
-    });
   });
 }
 
@@ -264,8 +287,7 @@ function checkWin() {
     [0,3,6],[1,4,7],[2,5,8],
     [0,4,8],[2,4,6]
   ];
-
-  return winCombos.some(([a,b,c]) => {
-    return board[a] !== "" && board[a] === board[b] && board[b] === board[c];
-  });
+  return winCombos.some(([a,b,c]) =>
+    board[a] !== "" && board[a] === board[b] && board[b] === board[c]
+  );
 }
