@@ -2,7 +2,7 @@
 const firebaseConfig = {
   apiKey: "AIzaSyC1LIU2JolH7XBAORbbexRqJjlQgdmXiQA",
   authDomain: "tic-tac-glow-df8d1.firebaseapp.com",
-  databaseURL: "https://tic-tac-glow-df8d1-default-rtdb.firebaseio.com",
+   databaseURL: "https://tic-tac-glow-df8d1-default-rtdb.firebaseio.com/",
   projectId: "tic-tac-glow-df8d1",
   storageBucket: "tic-tac-glow-df8d1.appspot.com",
   messagingSenderId: "1098253185974",
