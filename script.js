@@ -8,6 +8,7 @@ const firebaseConfig = {
   messagingSenderId: "1098253185974",
   appId: "1:1098253185974:web:e9475e79797bb7f6890717"
 };
+
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const database = firebase.database();
@@ -20,6 +21,7 @@ const userInfo = document.getElementById("userInfo");
 const boardEl = document.getElementById("board");
 const statusEl = document.getElementById("status");
 const resetBtn = document.getElementById("resetBtn");
+const menuBtn = document.getElementById("menuBtn");
 const roomIdInput = document.getElementById("roomId");
 const createRoomBtn = document.getElementById("createRoom");
 const joinRoomBtn = document.getElementById("joinRoom");
@@ -28,19 +30,23 @@ const multiPanel = document.getElementById("multiPanel");
 const modeSelector = document.getElementById("modeSelector");
 const startModeBtn = document.getElementById("startModeBtn");
 
+// Game state
 let currentUser = null;
 let currentRoom = null;
+let playerSymbol = null;
+let currentTurn = "X";
 let isPlayerX = true;
 let gameActive = false;
 let gameMode = null;
 let board = Array(9).fill("");
 
+// Symbols
 const symbols = [
   '<span style="color:#ff4d4d;">🪙</span>',
   '<span style="color:#00ffe1;">🧿</span>'
 ];
 
-// Auth Handling
+// Auth
 auth.onAuthStateChanged(user => {
   currentUser = user;
   loginBtn.style.display = user ? "none" : "inline-block";
@@ -50,10 +56,11 @@ auth.onAuthStateChanged(user => {
     statusEl.textContent = "Enter room ID or create one.";
   }
 });
+
 loginBtn.onclick = () => auth.signInWithPopup(provider);
 logoutBtn.onclick = () => auth.signOut();
 
-// Mode selection
+// Mode Selection
 document.querySelectorAll('.mode-card').forEach(card => {
   card.onclick = () => {
     document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
@@ -61,19 +68,23 @@ document.querySelectorAll('.mode-card').forEach(card => {
     gameMode = card.dataset.mode;
   };
 });
+
 startModeBtn.onclick = () => {
   if (!gameMode) return alert("Choose a mode!");
   modeSelector.style.display = "none";
+  menuBtn.style.display = "inline-block";
+
   if (gameMode === "online") {
     authPanel.style.display = "block";
     multiPanel.style.display = "block";
     statusEl.textContent = "Login to start.";
   } else {
+    authPanel.style.display = "none";
+    multiPanel.style.display = "none";
     startLocalGame();
   }
 };
 
-// Local/CPU Game
 function startLocalGame() {
   board = Array(9).fill("");
   isPlayerX = true;
@@ -83,59 +94,99 @@ function startLocalGame() {
   resetBtn.style.display = "inline-block";
 }
 
+function updateStatus() {
+  if (!gameActive) return;
+  if (gameMode === "online") {
+    statusEl.textContent = (currentTurn === playerSymbol) ? `Your Turn (${playerSymbol})` : `Opponent's Turn`;
+  } else {
+    statusEl.textContent = `${isPlayerX ? "🪙" : "🧿"}'s Turn`;
+  }
+}
+
 function renderBoard() {
   boardEl.innerHTML = "";
   board.forEach((val, i) => {
     const div = document.createElement("div");
     div.className = "cell";
     div.innerHTML = val;
-    div.onclick = () => makeMove(i);
+    div.onclick = () => handleCellClick(i);
     boardEl.appendChild(div);
   });
 }
 
-function updateStatus() {
-  if (!gameActive) return;
-  statusEl.textContent = `${isPlayerX ? "🪙" : "🧿"}'s Turn`;
-}
+function handleCellClick(i) {
+  if (!gameActive || board[i] !== "") return;
 
-function makeMove(i) {
-  if (!gameActive || board[i]) return;
-  board[i] = symbols[isPlayerX ? 0 : 1];
-  renderBoard();
-  if (checkWin()) {
-    statusEl.textContent = `🏆 ${symbols[+!isPlayerX]} wins!`;
-    alert(`🏆 Player ${isPlayerX ? "🪙" : "🧿"} wins!`);
-    gameActive = false;
-  } else if (!board.includes("")) {
-    statusEl.textContent = "🤝 Draw!";
-    alert("🤝 It's a Draw!");
-    gameActive = false;
+  if (gameMode === "online") {
+    if (currentTurn !== playerSymbol) return;
+    board[i] = symbols[playerSymbol === "X" ? 0 : 1];
+    currentTurn = playerSymbol === "X" ? "O" : "X";
+    database.ref(`rooms/${currentRoom}`).update({
+      board: board,
+      currentTurn: currentTurn
+    });
   } else {
+    board[i] = symbols[isPlayerX ? 0 : 1];
+    renderBoard();
+    if (checkWin()) {
+      statusEl.textContent = `🏆 ${symbols[+!isPlayerX]} wins!`;
+      alert(`🏆 Player ${isPlayerX ? "🪙" : "🧿"} wins!`);
+      gameActive = false;
+      return;
+    }
+    if (!board.includes("")) {
+      statusEl.textContent = "🤝 Draw!";
+      alert("🤝 It's a Draw!");
+      gameActive = false;
+      return;
+    }
     isPlayerX = !isPlayerX;
     updateStatus();
+
+    if (gameMode === "cpu" && !isPlayerX && gameActive) {
+      setTimeout(cpuMove, 500);
+    }
   }
+
+  renderBoard();
 }
 
+// CPU Logic
+function cpuMove() {
+  const available = board.map((val, idx) => val === "" ? idx : null).filter(i => i !== null);
+  const move = available[Math.floor(Math.random() * available.length)];
+  handleCellClick(move);
+}
+
+// Reset
 resetBtn.onclick = () => {
   board = Array(9).fill("");
   isPlayerX = true;
+  currentTurn = "X";
   gameActive = true;
   renderBoard();
   updateStatus();
+  if (gameMode === "cpu" && !isPlayerX) {
+    setTimeout(cpuMove, 500);
+  }
 };
 
-// Check win
-function checkWin() {
-  const winLines = [
-    [0,1,2],[3,4,5],[6,7,8],
-    [0,3,6],[1,4,7],[2,5,8],
-    [0,4,8],[2,4,6]
-  ];
-  return winLines.some(([a,b,c]) => board[a] && board[a] === board[b] && board[b] === board[c]);
-}
+// Main Menu
+menuBtn.onclick = () => {
+  gameActive = false;
+  board = Array(9).fill("");
+  boardEl.innerHTML = "";
+  authPanel.style.display = "none";
+  multiPanel.style.display = "none";
+  resetBtn.style.display = "none";
+  menuBtn.style.display = "none";
+  modeSelector.style.display = "block";
+  statusEl.textContent = "Select a mode to start";
+  if (currentRoom) database.ref(`rooms/${currentRoom}`).off();
+  currentRoom = null;
+};
 
-// Firebase Room Handling
+// Firebase Multiplayer
 createRoomBtn.onclick = () => {
   if (!currentUser) return alert("Login first!");
   const room = Math.random().toString(36).substring(2, 7);
@@ -160,6 +211,7 @@ joinRoomBtn.onclick = () => {
 function joinRoom(room) {
   currentRoom = room;
   const ref = database.ref(`rooms/${room}`);
+
   ref.once("value").then(snapshot => {
     const data = snapshot.val();
     if (!data) return alert("Room not found!");
@@ -170,19 +222,29 @@ function joinRoom(room) {
       data.players[currentUser.uid] = { symbol, name: currentUser.displayName };
       ref.child("players").set(data.players);
     }
+
     resetBtn.style.display = "inline-block";
+    menuBtn.style.display = "inline-block";
+
     ref.on("value", snap => {
       const d = snap.val();
+      if (!d) return;
       board = d.board;
+      currentTurn = d.currentTurn;
       renderBoard();
-      isPlayerX = d.players[currentUser.uid].symbol === "X";
-      gameActive = true;
-      updateStatus();
+
+      const playerData = d.players[currentUser.uid];
+      if (!playerData) return;
+      playerSymbol = playerData.symbol;
+
+      const playersReady = Object.keys(d.players).length >= 2;
+      gameActive = playersReady;
+      statusEl.textContent = playersReady ? (currentTurn === playerSymbol ? `Your Turn (${playerSymbol})` : "Opponent's Turn") : "Waiting for second player...";
     });
   });
 }
 
-// Auto-join shared room
+// Auto-join from link
 window.onload = () => {
   const params = new URLSearchParams(window.location.search);
   if (params.has("room")) {
@@ -194,3 +256,16 @@ window.onload = () => {
     statusEl.textContent = "Login to join shared room.";
   }
 };
+
+// Win Check
+function checkWin() {
+  const winCombos = [
+    [0,1,2],[3,4,5],[6,7,8],
+    [0,3,6],[1,4,7],[2,5,8],
+    [0,4,8],[2,4,6]
+  ];
+
+  return winCombos.some(([a,b,c]) => {
+    return board[a] !== "" && board[a] === board[b] && board[b] === board[c];
+  });
+}
