@@ -4,21 +4,25 @@
   box-sizing: border-box;
 }
 
-body {
+html, body {
   font-family: 'Orbitron', sans-serif;
   background: radial-gradient(circle at center, #0f0f1a, #000);
   margin: 0;
   padding: 0;
-  height: 100vh;
+  height: 100%;
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
   color: white;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .background {
-  position: absolute;
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 200%;
   height: 200%;
   background: radial-gradient(circle, #1a1a2e 0%, #0f0f1a 100%);
@@ -39,8 +43,10 @@ body {
   border-radius: 20px;
   padding: 30px;
   text-align: center;
-  width: 480px;
+  width: 95vw;
+  max-width: 480px;
   backdrop-filter: blur(10px);
+  box-sizing: border-box;
 }
 
 .title {
@@ -55,16 +61,18 @@ body {
   justify-content: space-around;
   margin: 15px 0;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .mode-card {
-  padding: 10px 15px;
+  flex: 1;
+  min-width: 90px;
+  padding: 10px;
   background: #1f1f3f;
   border-radius: 10px;
   cursor: pointer;
   box-shadow: 0 0 8px #08fdd8;
   transition: 0.2s;
-  flex: 1;
   text-align: center;
 }
 
@@ -89,6 +97,16 @@ button {
 button:hover {
   transform: scale(1.05);
   box-shadow: 0 0 10px #08fdd8;
+}
+
+#menuBtn {
+  margin-top: 10px;
+  padding: 10px 20px;
+  background: linear-gradient(to right, #aaa, #ccc);
+  color: #000;
+  border: none;
+  border-radius: 10px;
+  display: none;
 }
 
 .board {
@@ -156,11 +174,10 @@ input#roomId::placeholder {
   text-shadow: 0 0 4px #08fdd8;
 }
 
-/* Responsive */
 @media (max-width: 500px) {
   .game-container {
-    width: 95%;
     padding: 20px;
+    width: 95%;
   }
 
   .board {
@@ -172,5 +189,9 @@ input#roomId::placeholder {
     width: 80px;
     height: 80px;
     font-size: 28px;
+  }
+
+  .title {
+    font-size: 1.6rem;
   }
 }
