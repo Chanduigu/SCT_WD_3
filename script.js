@@ -261,14 +261,17 @@ function setupRoomListener(room) {
     }
 
     const winner = checkWinOnline(board);
-    if (winner) {
-      statusEl.textContent = `🏆 ${symbols[winner === "X" ? 0 : 1]} wins!`;
+    if (winner && gameActive) {
+      const winSymbol = symbols[winner === "X" ? 0 : 1];
+      statusEl.textContent = `🏆 ${winSymbol} wins!`;
+      alert(`🏆 Player ${winner === "X" ? "🪙" : "🧿"} wins!`);
       gameActive = false;
       return;
     }
 
-    if (!board.includes("")) {
+    if (!board.includes("") && gameActive) {
       statusEl.textContent = "🤝 Draw!";
+      alert("🤝 It's a Draw!");
       gameActive = false;
       return;
     }
