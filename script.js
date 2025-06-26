@@ -1,3 +1,4 @@
+// Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyC1LIU2JolH7XBAORbbexRqJjlQgdmXiQA",
   authDomain: "tic-tac-glow-df8d1.firebaseapp.com",
@@ -7,12 +8,12 @@ const firebaseConfig = {
   messagingSenderId: "1098253185974",
   appId: "1:1098253185974:web:e9475e79797bb7f6890717"
 };
-
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const database = firebase.database();
 const provider = new firebase.auth.GoogleAuthProvider();
 
+// Elements
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 const userInfo = document.getElementById("userInfo");
@@ -39,7 +40,7 @@ const symbols = [
   '<span style="color:#00ffe1;">🧿</span>'
 ];
 
-// Auth
+// Auth Handling
 auth.onAuthStateChanged(user => {
   currentUser = user;
   loginBtn.style.display = user ? "none" : "inline-block";
@@ -49,12 +50,10 @@ auth.onAuthStateChanged(user => {
     statusEl.textContent = "Enter room ID or create one.";
   }
 });
-
-// Login
 loginBtn.onclick = () => auth.signInWithPopup(provider);
 logoutBtn.onclick = () => auth.signOut();
 
-// UI + Events
+// Mode selection
 document.querySelectorAll('.mode-card').forEach(card => {
   card.onclick = () => {
     document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
@@ -62,7 +61,6 @@ document.querySelectorAll('.mode-card').forEach(card => {
     gameMode = card.dataset.mode;
   };
 });
-
 startModeBtn.onclick = () => {
   if (!gameMode) return alert("Choose a mode!");
   modeSelector.style.display = "none";
@@ -71,12 +69,19 @@ startModeBtn.onclick = () => {
     multiPanel.style.display = "block";
     statusEl.textContent = "Login to start.";
   } else {
-    gameActive = true;
-    resetBtn.style.display = "inline-block";
-    renderBoard();
-    updateStatus();
+    startLocalGame();
   }
 };
+
+// Local/CPU Game
+function startLocalGame() {
+  board = Array(9).fill("");
+  isPlayerX = true;
+  gameActive = true;
+  renderBoard();
+  updateStatus();
+  resetBtn.style.display = "inline-block";
+}
 
 function renderBoard() {
   boardEl.innerHTML = "";
@@ -95,23 +100,21 @@ function updateStatus() {
 }
 
 function makeMove(i) {
-  if (!gameActive || board[i] !== "") return;
+  if (!gameActive || board[i]) return;
   board[i] = symbols[isPlayerX ? 0 : 1];
   renderBoard();
   if (checkWin()) {
     statusEl.textContent = `🏆 ${symbols[+!isPlayerX]} wins!`;
-    gameActive = false;
     alert(`🏆 Player ${isPlayerX ? "🪙" : "🧿"} wins!`);
-    return;
-  }
-  if (!board.includes("")) {
-    statusEl.textContent = "🤝 Draw!";
     gameActive = false;
+  } else if (!board.includes("")) {
+    statusEl.textContent = "🤝 Draw!";
     alert("🤝 It's a Draw!");
-    return;
+    gameActive = false;
+  } else {
+    isPlayerX = !isPlayerX;
+    updateStatus();
   }
-  isPlayerX = !isPlayerX;
-  updateStatus();
 }
 
 resetBtn.onclick = () => {
@@ -122,7 +125,17 @@ resetBtn.onclick = () => {
   updateStatus();
 };
 
-// Firebase Online Room
+// Check win
+function checkWin() {
+  const winLines = [
+    [0,1,2],[3,4,5],[6,7,8],
+    [0,3,6],[1,4,7],[2,5,8],
+    [0,4,8],[2,4,6]
+  ];
+  return winLines.some(([a,b,c]) => board[a] && board[a] === board[b] && board[b] === board[c]);
+}
+
+// Firebase Room Handling
 createRoomBtn.onclick = () => {
   if (!currentUser) return alert("Login first!");
   const room = Math.random().toString(36).substring(2, 7);
@@ -169,7 +182,7 @@ function joinRoom(room) {
   });
 }
 
-// Auto-join if room shared
+// Auto-join shared room
 window.onload = () => {
   const params = new URLSearchParams(window.location.search);
   if (params.has("room")) {
