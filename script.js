@@ -2,7 +2,7 @@
 const firebaseConfig = {
   apiKey: "AIzaSyC1LIU2JolH7XBAORbbexRqJjlQgdmXiQA",
   authDomain: "tic-tac-glow-df8d1.firebaseapp.com",
-   databaseURL: "https://tic-tac-glow-df8d1-default-rtdb.firebaseio.com/",
+  databaseURL: "https://tic-tac-glow-df8d1-default-rtdb.firebaseio.com/",
   projectId: "tic-tac-glow-df8d1",
   storageBucket: "tic-tac-glow-df8d1.appspot.com",
   messagingSenderId: "1098253185974",
@@ -192,7 +192,7 @@ createRoomBtn.onclick = () => {
   if (!currentUser) return alert("Login first!");
   const room = Math.random().toString(36).substring(2, 7);
   currentRoom = room;
-  setupRoomListener(room); // Attach listener FIRST
+  setupRoomListener(room);
   const ref = database.ref(`rooms/${room}`);
   ref.set({
     board: Array(9).fill(""),
@@ -260,6 +260,19 @@ function setupRoomListener(room) {
       return;
     }
 
+    const winner = checkWinOnline(board);
+    if (winner) {
+      statusEl.textContent = `🏆 ${symbols[winner === "X" ? 0 : 1]} wins!`;
+      gameActive = false;
+      return;
+    }
+
+    if (!board.includes("")) {
+      statusEl.textContent = "🤝 Draw!";
+      gameActive = false;
+      return;
+    }
+
     gameActive = true;
     updateStatus();
     resetBtn.style.display = "inline-block";
@@ -267,7 +280,7 @@ function setupRoomListener(room) {
   });
 }
 
-// Auto-join from link
+// Auto-join
 window.onload = () => {
   const params = new URLSearchParams(window.location.search);
   if (params.has("room")) {
@@ -280,7 +293,7 @@ window.onload = () => {
   }
 };
 
-// Win Check
+// Local Win
 function checkWin() {
   const winCombos = [
     [0,1,2],[3,4,5],[6,7,8],
@@ -290,4 +303,23 @@ function checkWin() {
   return winCombos.some(([a,b,c]) =>
     board[a] !== "" && board[a] === board[b] && board[b] === board[c]
   );
+}
+
+// Online Win Check
+function checkWinOnline(boardState) {
+  const winPatterns = [
+    [0,1,2],[3,4,5],[6,7,8],
+    [0,3,6],[1,4,7],[2,5,8],
+    [0,4,8],[2,4,6]
+  ];
+  for (const [a, b, c] of winPatterns) {
+    const va = boardState[a];
+    const vb = boardState[b];
+    const vc = boardState[c];
+    if (va && va === vb && vb === vc) {
+      if (va.includes("🪙")) return "X";
+      if (va.includes("🧿")) return "O";
+    }
+  }
+  return null;
 }
