@@ -4,14 +4,21 @@
   <meta charset="UTF-8" />
   <title>Tic Tac Glow</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Styles -->
   <link rel="stylesheet" href="style.css" />
-  <!-- Firebase -->
+
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 </head>
+
 <body>
+  <!-- Background -->
   <div class="background"></div>
+
+  <!-- Game Container -->
   <div class="game-container">
     <h1 class="title">✨ Tic Tac Glow (3×3)</h1>
 
@@ -26,31 +33,34 @@
       <button id="startModeBtn">🎮 Start Game</button>
     </div>
 
-    <!-- Login -->
-    <div id="authPanel" style="display:none;">
+    <!-- Google Authentication -->
+    <div id="authPanel" style="display: none;">
       <button id="loginBtn">🔐 Login with Google</button>
       <span id="userInfo"></span>
-      <button id="logoutBtn" style="display:none;">🚪 Logout</button>
+      <button id="logoutBtn" style="display: none;">🚪 Logout</button>
     </div>
 
-    <!-- Online Multiplayer -->
-    <div class="multiplayer" id="multiPanel" style="display:none;">
+    <!-- Online Multiplayer Panel -->
+    <div class="multiplayer" id="multiPanel" style="display: none;">
       <input id="roomId" placeholder="Enter Room ID" />
-      <button id="createRoom">Create Room</button>
-      <button id="joinRoom">Join Room</button>
+      <button id="createRoom">➕ Create Room</button>
+      <button id="joinRoom">🔗 Join Room</button>
     </div>
 
-    <!-- Board -->
+    <!-- Game Board -->
     <div class="board" id="board"></div>
 
-    <!-- Status -->
+    <!-- Game Status -->
     <div class="status" id="status">Select a mode to start</div>
 
     <!-- Controls -->
-    <button id="resetBtn" class="reset-btn" style="display:none;">🔁 Restart Game</button>
-    <button id="menuBtn" class="reset-btn" style="display:none; background: #333;">🔙 Main Menu</button>
+    <div class="controls">
+      <button id="resetBtn" class="reset-btn" style="display:none;">🔁 Restart Game</button>
+      <button id="menuBtn" class="reset-btn" style="display:none; background:#333;">🔙 Main Menu</button>
+    </div>
   </div>
 
+  <!-- Main Game Script -->
   <script src="script.js"></script>
 </body>
 </html>
